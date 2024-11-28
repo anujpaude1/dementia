@@ -1,0 +1,21 @@
+meta {
+  name: caretaker detail
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseURL}}/api/users/caretaker/
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Token c17c6d35f13178d518b7924ada8ecbafcc6a4979
+}
+
+body:json {
+  {
+    "patient_username": "pp"
+  }
+}

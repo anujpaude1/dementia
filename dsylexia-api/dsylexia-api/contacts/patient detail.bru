@@ -1,0 +1,21 @@
+meta {
+  name: patient detail
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseURL}}/api/users/patient/
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Token c397e1ac3f12c11f5f0abe5ab6cb338040e81971
+}
+
+body:json {
+  {
+    "patient_username":"pp"
+  }
+}

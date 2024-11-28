@@ -1,0 +1,24 @@
+meta {
+  name: create contact
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseURL}}/contacts/create
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Token c17c6d35f13178d518b7924ada8ecbafcc6a4979
+}
+
+body:json {
+  {
+    "patient_username":"1",
+    "name":"Abhiyan",
+    "phone_number":9845,
+    "relationship":"neighbour"
+  }
+}

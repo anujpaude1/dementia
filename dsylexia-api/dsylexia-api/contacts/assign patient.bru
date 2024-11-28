@@ -1,0 +1,21 @@
+meta {
+  name: assign patient
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseURL}}/api/users/assign/
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Token 3e962ee42ea05401609f839a4f889c9cda32ca39
+}
+
+body:json {
+  {
+    "patient_username":"p2"
+  }
+}

@@ -1,0 +1,43 @@
+meta {
+  name: update patient detail
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseURL}}/api/users/patient/6/
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Token 3e962ee42ea05401609f839a4f889c9cda32ca39
+}
+
+body:json {
+  {
+    "name":"uname",
+    "height":176,
+    "weight":80,
+    "age":34,
+    "medical_conditions": "Diabetes, Hypertension",
+    "emergency_contact": "John Doe - 9876543210",
+    "goals": ["Lose weight", "Exercise more"],
+    "medicines": [{"frequency":"twice a day", "name":"insulin","dosage":"500mg"}],
+    "notes": [{"date":"2024-03-14", "description":"My notes for today is this","title":"Day 1"}],
+    "appointments": [
+    {
+      "date": "2024-12-10",
+      "time": "09:00 AM",
+      "description":"Routine checkup"
+    },
+    {
+      "date": "2024-12-25",
+      "time": "02:00 PM",
+      "description":"day 2"
+    }
+  ]
+  
+  }
+  
+}
