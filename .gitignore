@@ -1,0 +1,55 @@
+# Flutter/Dart generated files
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+
+# Build output directories
+build/
+android/app/debug/
+android/app/profile/
+android/app/release/
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/*.last_build_id
+ios/Pods/
+
+# macOS-specific
+macos/Flutter/ephemeral/
+macos/Pods/
+
+# Windows-specific
+windows/flutter/ephemeral/
+
+# Linux-specific
+linux/flutter/ephemeral/
+
+# Web-specific
+web/.dart_tool/
+web/flutter/
+
+# Firebase-related files (optional)
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
+
+# IDE config files
+.idea/
+.vscode/
+*.iml
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs and debugging
+*.log
+
+# Coverage files
+coverage/
+
+# Environment files
+.env
+.env.*
+
