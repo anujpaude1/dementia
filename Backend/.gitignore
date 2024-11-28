@@ -1,43 +1,7 @@
-# Python bytecode
-*.pyc
-*.pyo
-__pycache__/
-
-# Virtual environment
-venv/
-env/
+venv
 myenv
-
-# Django files
-db.sqlite3
-*.log
-staticfiles/
+*.pyc
+pycache/
 media/
-
-# Environment variables
+staticfiles/
 .env
-
-# IDE files
-.vscode/
-.idea/
-*.sublime-workspace
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# Pytest
-htmlcov/
-.tox/
-coverage/
-.cache/
-.pytest_cache/
-
-# Migrations
-*/migrations/*
-
-# Ignore specific files in migrations but keep __init__.py
-!*/migrations/__init__.py
-
-# Node.js
-node_modules/
