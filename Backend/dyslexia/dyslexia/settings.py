@@ -54,6 +54,8 @@ CORS_ALLOW_CREDENTIALS = True
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -63,6 +65,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
     'contacts',
+    'chatbot',
     'rest_framework.authtoken',
 ]
 
@@ -94,6 +97,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'dyslexia.wsgi.application'
+
+ASGI_APPLICATION = 'dyslexia.asgi.application'
 
 
 # Database
@@ -146,14 +151,35 @@ LOGGING = {
     'disable_existing_loggers': False,
     'handlers': {
         'console': {
-            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
         },
     },
     'loggers': {
-        '': {
+        'django': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',  # Use DEBUG for more details
+        },
+        'channels': {
+            'handlers': ['console'],
+            'level': 'DEBUG',  # Captures WebSocket logs
         },
     },
+}
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',  # Redis server URL
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        'KEY_PREFIX': 'myapp'  # Optional: Prefix for cache keys
+    }
 }
