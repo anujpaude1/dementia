@@ -53,7 +53,7 @@ Future<bool> fetchData(BuildContext context, [bool update = false]) async {
 
       if (patientsResponse.statusCode == 200) {
         final patientsData = jsonDecode(patientsResponse.body);
-
+        print(patientsData);
         if (context.mounted) {
           for (var patient in patientsData) {
             Provider.of<PatientProvider>(context, listen: update).addPatient(
@@ -108,7 +108,7 @@ Future<bool> fetchData(BuildContext context, [bool update = false]) async {
 
     if (patientResponse.statusCode == 200) {
       final patientData = jsonDecode(patientResponse.body);
-
+      print(patientData);
       Provider.of<PatientProvider>(context, listen: false).addPatient(
         Patient(
           id: (patientData[0]['id']).toString(),
@@ -137,6 +137,8 @@ Future<bool> fetchData(BuildContext context, [bool update = false]) async {
                   ?.map((item) => item as Map<String, dynamic>)
                   .toList() ??
               [],
+          centerCoordinatesLat: patientData[0]['center_coordinates_lat'],
+          centerCoordinatesLong: patientData[0]['center_coordinates_long'],
         ),
       );
     } else {

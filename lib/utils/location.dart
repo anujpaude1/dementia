@@ -108,7 +108,7 @@ void onStart(ServiceInstance service) async {
         logger.d("Response: ${response.body}");
         final responseData = jsonDecode(response.body);
         if (responseData['is_outside_geofence']) {
-          playSound();
+          // playSound();
         }
       } else {
         logger.e("Failed to update location: ${response.statusCode}");

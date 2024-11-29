@@ -94,8 +94,8 @@ class _ChatPageState extends State<ChatPage> {
                 primaryColor: Colors.blue,
                 secondaryColor: Colors.grey[200]!,
                 inputTextStyle: TextStyle(fontSize: 18),
-                inputPadding: const EdgeInsets.all(30),
-                
+                inputPadding: const EdgeInsets.all(15),
+
                 inputMargin: EdgeInsets.all(10), // Better padding
                 userAvatarNameColors: [Colors.blue, Colors.green],
                 messageInsetsVertical: 10, // Vertical padding for messages
