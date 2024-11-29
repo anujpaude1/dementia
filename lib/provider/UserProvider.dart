@@ -64,6 +64,32 @@ class CaretakerProvider with ChangeNotifier {
     _caretaker = updatedCaretaker;
     notifyListeners();
   }
+
+  // Sync caretaker data with server
+  Future<void> updateOnServer(String caretakerId) async {
+    final baseURL = Globals.baseURL;
+    final storage = new FlutterSecureStorage();
+    final token = await storage.read(key: 'token') ?? '';
+    print("Token is $token");
+    print(jsonEncode(_caretaker!.toJson()));
+    final String url = '$baseURL/api/users/caretaker/';
+    final response = await http.post(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': "Token $token",
+      },
+      body: jsonEncode(_caretaker!.toJson()),
+    );
+    if (response.statusCode != 200) {
+      // Handle error
+      print('Failed to update caretaker on server');
+      print(response.body);
+    }
+    if (response.statusCode == 200) {
+      print('Caretaker updated on server');
+    }
+  }
 }
 
 class PatientProvider with ChangeNotifier {
@@ -106,6 +132,18 @@ class PatientProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Function to update centerCoordinatesLat, centerCoordinatesLong, and radius
+  void updatePatientLocation(
+      String patientId, double lat, double long, double radius) {
+    int index = _patients.indexWhere((p) => p.id == patientId);
+    if (index != -1) {
+      _patients[index].centerCoordinatesLat = lat;
+      _patients[index].centerCoordinatesLong = long;
+      _patients[index].radius = radius;
+      notifyListeners();
+    }
+  }
+
   // Create a patient from JSON and add to the list
   void createAndAddPatient(Map<String, dynamic> patientJson) {
     Patient newPatient = Patient.fromJson(patientJson);
@@ -129,6 +167,7 @@ class PatientProvider with ChangeNotifier {
     int index = _patients.indexWhere((p) => p.id == id);
     if (index != -1) {
       _patients[index] = updatedPatient;
+      _selectedPatient = updatedPatient;
       notifyListeners();
     }
   }
@@ -147,7 +186,6 @@ class PatientProvider with ChangeNotifier {
       _patients[index].appointments.add(appointment);
       notifyListeners();
     }
-
   }
 
   // Add a medicine
@@ -264,10 +302,7 @@ class PatientProvider with ChangeNotifier {
       print('Patient updated on server');
     }
   }
-  //
- 
 }
-
 
 class NotesPatient with ChangeNotifier {
   List<dynamic> _notes = [];
@@ -301,7 +336,7 @@ class NotesPatient with ChangeNotifier {
     }
   }
 
-  Future<void> addNote( Map<String, dynamic> note) async {
+  Future<void> addNote(Map<String, dynamic> note) async {
     final storage = new FlutterSecureStorage();
     final token = await storage.read(key: 'token') ?? '';
     final baseURL = Globals.baseURL;
@@ -325,7 +360,8 @@ class NotesPatient with ChangeNotifier {
     }
   }
 
-  Future<void> updateNote(String noteId, Map<String, dynamic> updatedNote) async {
+  Future<void> updateNote(
+      String noteId, Map<String, dynamic> updatedNote) async {
     final storage = new FlutterSecureStorage();
     final token = await storage.read(key: 'token') ?? '';
     final baseURL = Globals.baseURL;
