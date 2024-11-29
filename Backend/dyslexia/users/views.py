@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from users.permissions import Iscaretaker, IsPatient
 import logging
 import geopy
+from geopy.distance import distance
 
 logger = logging.getLogger(__name__)
 # View to handle user registration (Sign Up)
@@ -20,18 +21,27 @@ class SignUpView(generics.CreateAPIView):
         """
         Handle sign-up by creating a new user.
         """
+        print("Request data")
         print(request.data)
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            # Generate token
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({
-                "message": "User created successfully. Please login.",
-                "user_type": request.data.get('user_type'),
-                "token": token.key,
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid():
+                user = serializer.save()
+                # Generate token
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({
+                    "message": "User created successfully. Please login.",
+                    "user_type": request.data.get('user_type'),
+                    "token": token.key,
+                }, status=status.HTTP_201_CREATED)
+            else:
+                print("Serializer errors")
+                print(serializer.errors)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print("An error occurred during user creation")
+            print(str(e))
+            return Response({"error": "An error occurred during user creation."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LoginView(generics.GenericAPIView):
@@ -121,7 +131,10 @@ class AssignPatientView(generics.GenericAPIView):
                 )
             patient.caretakers.add(request.user.id)
             return Response(
-                {"message": "Patient assigned successfully."},
+                {
+                    "message": "Patient assigned successfully.",
+                    "patient_details": PatientSerializer(patient, context={'request': request}).data
+                },
                 status=status.HTTP_200_OK
             )
         except Patient.DoesNotExist:
@@ -129,6 +142,7 @@ class AssignPatientView(generics.GenericAPIView):
                 {"error": "Patient not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
+
         
 
 class PatientListView(generics.ListAPIView):
@@ -269,16 +283,15 @@ class GeofenceView(generics.GenericAPIView):
         current_point = (current_lat, current_long)
         radius = patient.radius
 
-        distance = geopy.distance.distance(center_point, current_point).km
+        distance_km = distance(center_point, current_point).km
 
-        is_outside_geofence = distance > radius
+        is_outside_geofence = distance_km > radius
 
         # Return user data
         serializer = PatientSerializer(patient)
         return Response({
-            "user_data": serializer.data,
             "is_outside_geofence": is_outside_geofence,
-            "distance_from_center": distance
+            "distance_from_center": distance_km
         }, status=status.HTTP_200_OK)
 
 
@@ -299,12 +312,23 @@ class PatientLocationView(generics.GenericAPIView):
         if not patient.caretakers.filter(id=user.id).exists():
             return Response({"error": "You are not authorized to view this patient's location."}, status=status.HTTP_403_FORBIDDEN)
 
-        # Return patient's current location data
+        # Calculate if the patient is outside the geofence
+        center_point = (patient.center_coordinates_lat, patient.center_coordinates_long)
+        current_point = (patient.current_coordinates_lat, patient.current_coordinates_long)
+        radius = patient.radius
+
+        distance_km = distance(center_point, current_point).km
+        is_outside_geofence = distance_km > radius
+
+        # Return patient's current location data along with geofence status
         location_data = {
             "current_coordinates_lat": patient.current_coordinates_lat,
             "current_coordinates_long": patient.current_coordinates_long,
             "radius": patient.radius,
             "center_coordinates_lat": patient.center_coordinates_lat,
-            "center_coordinates_long": patient.center_coordinates_long
+            "center_coordinates_long": patient.center_coordinates_long,
+            "is_outside_geofence": is_outside_geofence,
+            "distance_from_center": distance_km
         }
         return Response(location_data, status=status.HTTP_200_OK)
+

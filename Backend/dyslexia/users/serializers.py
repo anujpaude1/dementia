@@ -57,10 +57,9 @@ class LoginSerializer(serializers.Serializer):
 class CaretakerSerializer(serializers.ModelSerializer):
     class Meta:
         model = caretaker
-        fields = ['id', 'email', 'username', 'name', 'qualifications', 'experience_years', 'patients','photo']
+        fields = ['id', 'email', 'username', 'name', 'qualifications', 'experience_years', 'patients', 'photo']
 
 # Patient Serializer
-
 class PatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
