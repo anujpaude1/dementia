@@ -17,7 +17,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 MEDIA_URL = '/media/'  # URL path to access media files
-MEDIA_ROOT = os.path.join(BASE_DIR, 'contacts/photo')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'contacts/photo/')
 # Quick-start development settings - unsuitable for production
 SECRET_KEY = 'django-insecure-3-on&^#_w(_5++wssbnfpvqxzmkq8g%8h8h=sjb-cuz89767uc'
 

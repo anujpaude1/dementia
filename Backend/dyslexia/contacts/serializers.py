@@ -29,3 +29,11 @@ class ContactSerializer(serializers.ModelSerializer):
         
         except Patient.DoesNotExist:
             raise serializers.ValidationError("Patient does not exist.")
+        
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        if instance.photo and request:
+            representation['photo_url'] = request.build_absolute_uri(instance.photo.url)
+        return representation
+

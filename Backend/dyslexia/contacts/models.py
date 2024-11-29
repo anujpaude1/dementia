@@ -5,11 +5,13 @@ class Contact(models.Model):
     patient = models.ForeignKey(
         Patient, 
         on_delete=models.CASCADE, 
-        related_name="contacts"
+        related_name="contacts",
+        null=True,
+        blank=True
     )
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=15)
-    photo = models.ImageField(upload_to="contacts/photo", blank=True, null=True)
+    photo = models.ImageField(upload_to="contacts", blank=True, null=True)
     relationship = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
 
