@@ -115,6 +115,11 @@ class Patient {
       weight: json['weight'],
       medicalConditions: json['medical_conditions'],
       emergencyContact: json['emergency_contact'],
+      currentCoordinatesLat: json['current_coordinates_lat'],
+      currentCoordinatesLong: json['current_coordinates_long'],
+      centerCoordinatesLat: json['center_coordinates_lat'],
+      centerCoordinatesLong: json['center_coordinates_long'],
+      radius: json['radius'] ?? 5.0,
       goals: (json['goals'] as List<dynamic>?)
               ?.map((item) => item as String)
               .toList() ??
@@ -147,13 +152,19 @@ class Patient {
       'height': height,
       'weight': weight,
       'age': age,
+      'current_coordinates_lat': currentCoordinatesLat,
+      'current_coordinates_long': currentCoordinatesLong,
+      'center_coordinates_lat': centerCoordinatesLat,
+      'center_coordinates_long': centerCoordinatesLong,
       'radius': radius,
       'goals': goals,
       'medicines': medicines,
+      'notes': notes,
       'appointments': appointments,
     };
   }
 }
+
 class Note {
   final String id;
   final String title;
@@ -172,7 +183,6 @@ class Note {
       id: json['id'],
       title: json['title'],
       description: json['description'],
-      
     );
   }
 
@@ -181,7 +191,6 @@ class Note {
       'id': id,
       'title': title,
       'description': description,
-      
     };
   }
 }

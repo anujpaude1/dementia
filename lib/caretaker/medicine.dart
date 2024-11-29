@@ -80,7 +80,9 @@ class _MedicinePageState extends State<MedicinePage> {
                 final dosage = dosageController.text;
                 final frequency = frequencyController.text;
 
-                if (name.isNotEmpty && dosage.isNotEmpty && frequency.isNotEmpty) {
+                if (name.isNotEmpty &&
+                    dosage.isNotEmpty &&
+                    frequency.isNotEmpty) {
                   final newMedicine = {
                     'name': name,
                     'dosage': dosage,
@@ -105,9 +107,12 @@ class _MedicinePageState extends State<MedicinePage> {
     );
   }
 
-  Future<void> _editMedicine(BuildContext context, Map<String, dynamic> medicine) async {
-    final TextEditingController dosageController = TextEditingController(text: medicine['dosage']);
-    final TextEditingController frequencyController = TextEditingController(text: medicine['frequency']);
+  Future<void> _editMedicine(
+      BuildContext context, Map<String, dynamic> medicine) async {
+    final TextEditingController dosageController =
+        TextEditingController(text: medicine['dosage']);
+    final TextEditingController frequencyController =
+        TextEditingController(text: medicine['frequency']);
 
     return showDialog<void>(
       context: context,
@@ -217,7 +222,8 @@ class _MedicinePageState extends State<MedicinePage> {
             margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             child: ListTile(
               title: Text(medicine['name']),
-              subtitle: Text('Dosage: ${medicine['dosage']}, Frequency: ${medicine['frequency']}'),
+              subtitle: Text(
+                  'Dosage: ${medicine['dosage']}, Frequency: ${medicine['frequency']}'),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -231,8 +237,11 @@ class _MedicinePageState extends State<MedicinePage> {
                     icon: Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
                       setState(() async {
-                        final patientProvider = Provider.of<PatientProvider>(context, listen: false);
-                        patientProvider.deleteMedicine(patient.id, medicine['name']);
+                        final patientProvider = Provider.of<PatientProvider>(
+                            context,
+                            listen: false);
+                        patientProvider.deleteMedicine(
+                            patient.id, medicine['name']);
                         await patientProvider.updateOnServer(patient.id);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Medicine deleted')),
