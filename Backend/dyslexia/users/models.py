@@ -53,7 +53,6 @@ class Patient(BaseUser):
     age = models.IntegerField(null=True, blank=True)
     current_coordinates_lat = models.FloatField(null=True, blank=True)
     current_coordinates_long = models.FloatField(null=True, blank=True)
-
     center_coordinates_lat = models.FloatField(null=True, blank=True)
     center_coordinates_long = models.FloatField(null=True, blank=True)
 
@@ -111,9 +110,7 @@ class Patient(BaseUser):
                     raise ValueError(f"Each note must include {key}")
                 
         return notes
-from django.db import models
-from .models import Patient, BaseUser
-
+    
 class Note(models.Model):
     patient = models.ForeignKey(
         Patient, 
