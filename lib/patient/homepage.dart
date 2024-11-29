@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider/UserProvider.dart';
-import '../provider/UserProvider.dart';
-import 'medicines.dart';
-import 'notes.dart';
-import 'appointments.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../utils/chat.dart'; // Import the ChatPage
 
 class PatientHomePage extends StatelessWidget {
   final Function(int) onNavigate;
-   void _makeEmergencyCall(String? phoneNumber) async {
+
+  PatientHomePage({required this.onNavigate});
+
+  void _makeEmergencyCall(String? phoneNumber) async {
     if (phoneNumber != null && phoneNumber.isNotEmpty) {
       final Uri launchUri = Uri(
         scheme: 'tel',
@@ -22,8 +24,39 @@ class PatientHomePage extends StatelessWidget {
     }
   }
 
+  void _openGoogleMaps(double? lat, double? long) async {
+    if (lat != null && long != null) {
+      final Uri googleMapsUri = Uri(
+        scheme: 'https',
+        host: 'www.google.com',
+        path: '/maps/search/',
+        queryParameters: {'api': '1', 'query': '$lat,$long'},
+      );
+      await launchUrl(googleMapsUri);
+    } else {
+      // Handle the case where the coordinates are not available
+      print('Coordinates are not available');
+    }
+  }
 
-  PatientHomePage({required this.onNavigate});
+  Future<void> getLocation() async {
+    final String baseURL = 'https://example.com'; // Replace with your actual base URL
+    final String locationURL = '$baseURL/api/users/patient/6/location/';
+
+    try {
+      final response = await http.get(Uri.parse(locationURL));
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        final double? lat = jsonResponse['latitude'];
+        final double? long = jsonResponse['longitude'];
+        _openGoogleMaps(lat, long);
+      } else {
+        print('Failed to fetch location');
+      }
+    } catch (e) {
+      print('Error fetching location: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,99 +69,185 @@ class PatientHomePage extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundImage: NetworkImage(patient.photo),
-                  ),
-                  SizedBox(width: 20),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Name: ${patient.name}'), // Add patient name
-                      Text('Age: ${patient.age} years'), // Add patient age
-                      Text('Height: ${patient.height} cm'), // Add patient height
-                      Text('Weight: ${patient.weight} kg'), // Add patient weight
-                    ],
-                  ),
-                ],
+              Center(
+                child: CircleAvatar(
+                  radius: 80, // Bigger size
+                  backgroundImage: NetworkImage(patient.photo),
+                ),
               ),
               SizedBox(height: 20),
-              GridView.count(
-                shrinkWrap: true,
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  _buildGridTile(context, Icons.calendar_today, 'Appointments', Colors.lightGreen, () {
-                    onNavigate(1); // Navigate to Appointments page
-                  }),
-                  _buildGridTile(context, Icons.medical_services, 'Medicines', const Color.fromARGB(255, 74, 153, 195), () {
-                    onNavigate(2); // Navigate to Medicines page
-                  }),
-                  _buildGridTile(context, Icons.note, 'Notes', const Color.fromARGB(255, 153, 74, 195), () {
-                    onNavigate(3); // Navigate to Notes page
-                  }),
-                  _buildGridTile(context, Icons.support, 'Support', const Color.fromARGB(255, 195, 167, 74), () {
-                    // Navigate to Support page
-                  }),
+                  ShaderMask(
+                    shaderCallback: (bounds) => LinearGradient(
+                      colors: [Colors.blue, Colors.purple],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ).createShader(bounds),
+                    child: Text(
+                      'Hey ${patient.name},',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Roboto',
+                        color: Colors.white, // This color will be masked by the gradient
+                      ),
+                    ),
+                  ),
+                  Text(
+                    'How may I help you today?',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
                 ],
               ),
               SizedBox(height: 20),
               Card(
                 elevation: 4,
-              
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: ExpansionTile(
-                  leading: Icon(Icons.star, color: Theme.of(context).primaryColor),
-                  title: Text('Goals & Achievements', style: Theme.of(context).textTheme.bodyLarge),
-                  backgroundColor: Colors.pink.withOpacity(0.1),
-                  children: patient.goals.map((goal) {
-                    return ListTile(
-                      leading: Icon(Icons.check_circle, color: Colors.green),
-                      title: Text(goal), // Add goal title
-                    );
-                  }).toList(),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFabbaab), Color(0xFFffffff)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    backgroundBlendMode: BlendMode.overlay,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildDetailRow('Name:', patient.name ?? 'N/A'),
+                        _buildDetailRow('Age:', '${patient.age} years'),
+                        _buildDetailRow('Height:', '${patient.height} cm'),
+                        _buildDetailRow('Weight:', '${patient.weight} kg'),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               SizedBox(height: 20),
-              ListTile(
-                leading: Icon(Icons.phone, color: Colors.red),
-                title: Text('Emergency Contact'),
-                tileColor: Colors.red.withOpacity(0.2),
-                onTap: () {
-                  // Handle emergency contact call
-                  _makeEmergencyCall(patient.emergencyContact);
-                },
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    gradient: LinearGradient(
+                      colors: [Color.fromARGB(255, 255, 255, 255), Color(0xFFffffff)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: ExpansionTile(
+                    initiallyExpanded: true, // Expanded by default
+                    leading: Icon(Icons.star, color: Theme.of(context).primaryColor),
+                    title: Text('Goals & Achievements', style: Theme.of(context).textTheme.bodyLarge),
+                    children: patient.goals.map((goal) {
+                      return ListTile(
+                        leading: Icon(Icons.check_circle, color: Colors.green),
+                        title: Text(goal), // Add goal title
+                      );
+                    }).toList(),
+                  ),
+                ),
               ),
+              SizedBox(height: 20),
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ListTile(
+                  leading: Icon(Icons.navigation, color: Theme.of(context).primaryColor),
+                  title: Text('Navigate Home', style: TextStyle(fontSize: 18, fontFamily: 'Roboto', fontWeight: FontWeight.bold)),
+                  onTap: () {
+                    getLocation();
+                  },
+                ),
+              ),
+              SizedBox(height: 10),
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ListTile(
+                  leading: Icon(Icons.phone, color: Colors.red),
+                  title: Text('Emergency Call', style: TextStyle(color: Colors.red, fontSize: 18, fontFamily: 'Roboto', fontWeight: FontWeight.bold)),
+                  onTap: () {
+                    _makeEmergencyCall(patient.emergencyContact);
+                  },
+                ),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton.icon(
+  onPressed: () {
+    Navigator.of(context).pop();
+  },
+  icon: Icon(Icons.home, color: Theme.of(context).primaryColor),
+  label: Text('Home'),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.white,
+    foregroundColor: Theme.of(context).primaryColor,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+    ),
+  ),
+)
+
             ],
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => ChatPage()),
+          );
+        },
+        child: Icon(Icons.chat),
+      ),
     );
   }
 
-  Widget _buildGridTile(BuildContext context, IconData icon, String title, Color color, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 40, color: color),
-            SizedBox(height: 10),
-            Text(title, style: TextStyle(color: color)),
-          ],
-        ),
+  Widget _buildDetailRow(String label, String value, [Color? color]) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Roboto',
+              color: color ?? Colors.black,
+            ),
+          ),
+          SizedBox(width: 10),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontFamily: 'Roboto',
+              color: color ?? Colors.black,
+            ),
+          ),
+        ],
       ),
     );
   }

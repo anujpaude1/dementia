@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider/UserProvider.dart';
 
+
 class NotesPage extends StatefulWidget {
   @override
   _NotesPageState createState() => _NotesPageState();
@@ -13,9 +14,25 @@ class _NotesPageState extends State<NotesPage> {
   final TextEditingController _descriptionController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _fetchNotes();
+  }
+
+  Future<void> _fetchNotes() async {
+    final notesProvider = Provider.of<NotesPatient>(context, listen: false);
+    final patientProvider = Provider.of<PatientProvider>(context, listen: false);
+    final patient = patientProvider.patients[0];
+
+    if (patient != null) {
+      await notesProvider.fetchNotes(patient.id);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final patient = Provider.of<PatientProvider>(context).patients[0];
-    final notes = patient.notes;
+    final notesProvider = Provider.of<NotesPatient>(context);
+    final notes = notesProvider.notes;
 
     return Scaffold(
       body: Stack(
@@ -27,9 +44,7 @@ class _NotesPageState extends State<NotesPage> {
             },
             child: selectedNote == null
                 ? Padding(
-                    padding: const EdgeInsets.only(
-                        top:
-                            70.0), // Adjust padding to move the notes container below the FAB
+                    padding: const EdgeInsets.only(top: 70.0),
                     child: ListView.builder(
                       key: ValueKey<int>(0),
                       itemCount: notes.length,
@@ -38,8 +53,7 @@ class _NotesPageState extends State<NotesPage> {
                         return Card(
                           margin: EdgeInsets.symmetric(vertical: 8.0),
                           child: ListTile(
-                            title: Text(note['title'],
-                                style: Theme.of(context).textTheme.bodyLarge),
+                            title: Text(note['title'], style: Theme.of(context).textTheme.bodyLarge),
                             subtitle: Text(
                               'Created on: ${DateTime.parse(note['date']).toLocal().toString().split(' ')[0]}',
                             ),
@@ -47,19 +61,14 @@ class _NotesPageState extends State<NotesPage> {
                               setState(() {
                                 selectedNote = note;
                                 _titleController.text = note['title'];
-                                _descriptionController.text =
-                                    note['description'];
+                                _descriptionController.text = note['description'];
                               });
                             },
                             trailing: IconButton(
                               icon: Icon(Icons.delete, color: Colors.red),
                               onPressed: () {
-                                // Handle note delete
                                 setState(() {
-                                  final patientProvider =
-                                      Provider.of<PatientProvider>(context,
-                                          listen: false);
-                                  patientProvider.deleteNote(note['title']);
+                                  notesProvider.deleteNote(note['id'].toString());
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('Note deleted')),
                                   );
@@ -127,23 +136,13 @@ class _NotesPageState extends State<NotesPage> {
                                 children: [
                                   ElevatedButton.icon(
                                     onPressed: () {
-                                      // Handle note update
-                                      // Update the note in the model
                                       setState(() {
-                                        selectedNote!['description'] =
-                                            _descriptionController.text;
-                                        // Update the note in the patient model
-                                        final patientProvider =
-                                            Provider.of<PatientProvider>(
-                                                context,
-                                                listen: false);
-                                        patientProvider
-                                            .updateNote(selectedNote!);
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                              content: Text('Note updated')),
+                                        selectedNote!['description'] = _descriptionController.text;
+                                        notesProvider.updateNote(selectedNote!['id'].toString(), selectedNote!);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Note updated')),
                                         );
+                                        selectedNote = null;
                                       });
                                     },
                                     icon: Icon(Icons.update),
@@ -152,20 +151,11 @@ class _NotesPageState extends State<NotesPage> {
                                   SizedBox(width: 10),
                                   ElevatedButton.icon(
                                     onPressed: () {
-                                      // Handle note delete
-                                      // Delete the note from the model
                                       setState(() {
-                                        final patientProvider =
-                                            Provider.of<PatientProvider>(
-                                                context,
-                                                listen: false);
-                                        patientProvider
-                                            .deleteNote(selectedNote!['title']);
+                                        notesProvider.deleteNote(selectedNote!['id']);
                                         selectedNote = null;
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                              content: Text('Note deleted')),
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Note deleted')),
                                         );
                                       });
                                     },
@@ -184,17 +174,18 @@ class _NotesPageState extends State<NotesPage> {
                     ],
                   ),
           ),
-          Positioned(
-            top: 16,
-            right: 16,
-            child: FloatingActionButton.extended(
-              onPressed: () {
-                _showAddNoteDialog(context);
-              },
-              icon: Icon(Icons.add),
-              label: Text('Add Note'),
+          if (selectedNote == null)
+            Positioned(
+              top: 16,
+              right: 16,
+              child: FloatingActionButton.extended(
+                onPressed: () {
+                  _showAddNoteDialog(context);
+                },
+                icon: Icon(Icons.add),
+                label: Text('Add Note'),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -241,18 +232,14 @@ class _NotesPageState extends State<NotesPage> {
             ),
             ElevatedButton(
               onPressed: () {
-                // Handle note addition
-                // Add a new note to the model
                 setState(() {
                   final newNote = {
                     'title': _titleController.text,
                     'description': _descriptionController.text,
                     'date': DateTime.now().toIso8601String(),
                   };
-                  final patientProvider =
-                      Provider.of<PatientProvider>(context, listen: false);
-                  patientProvider.addNote(
-                      patientProvider.patients[0].id, newNote);
+                  final notesProvider = Provider.of<NotesPatient>(context, listen: false);
+                  notesProvider.addNote(newNote);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Note added')),
                   );

@@ -8,7 +8,7 @@ import 'package:projects/model/models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-Future<bool> fetchData(BuildContext context) async {
+Future<bool> fetchData(BuildContext context, [bool update = false]) async {
   final storage = new FlutterSecureStorage();
   SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -56,7 +56,7 @@ Future<bool> fetchData(BuildContext context) async {
 
         if (context.mounted) {
           for (var patient in patientsData) {
-            Provider.of<PatientProvider>(context, listen: false).addPatient(
+            Provider.of<PatientProvider>(context, listen: update).addPatient(
               Patient(
                 id: (patient['id']).toString(),
                 email: patient['email'],

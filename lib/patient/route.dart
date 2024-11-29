@@ -6,6 +6,8 @@ import 'appointments.dart';
 import 'notes.dart';
 import 'medicines.dart';
 import '../utils/fetchData.dart';
+import 'package:projects/utils/location.dart';
+import 'package:projects/utils/locationPermission.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   @override
@@ -19,11 +21,12 @@ class _HomeScreenState extends State<PatientHomeScreen> {
   List<Widget>? _pages;
 
   @override
-   @override
+  @override
   void initState() {
     super.initState();
     _fetchData();
   }
+
   void _navigateToPage(int index) {
     setState(() {
       _page = index;
@@ -36,7 +39,9 @@ class _HomeScreenState extends State<PatientHomeScreen> {
     'Medicines',
     'Notes',
   ];
-Future<void> _fetchData() async {
+  Future<void> _fetchData() async {
+    await handleLocationPermission();
+    initializeService();
     await fetchData(context);
     setState(() {
       _pages = [
@@ -47,24 +52,38 @@ Future<void> _fetchData() async {
       ];
     });
   }
+
   @override
   Widget build(BuildContext context) {
-    
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titles[_page]),
-        backgroundColor: Theme.of(context).primaryColor,
+        title: Text(_titles[_page],
+            style: TextStyle(color: Theme.of(context).primaryColor)),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () {
-              signOut(context);
-            },
+         Container(
+            margin: EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 4,
+                  offset: Offset(2, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(Icons.logout, color: Theme.of(context).primaryColor),
+              onPressed: () {
+                signOut(context);
+              },
+            ),
           ),
         ],
       ),
-      body:  _pages == null
+      body: _pages == null
           ? Center(child: CircularProgressIndicator())
           : _pages![_page],
       bottomNavigationBar: CurvedNavigationBar(

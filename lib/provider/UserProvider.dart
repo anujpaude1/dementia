@@ -106,8 +106,15 @@ class PatientProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Create a patient from JSON and add to the list
+  void createAndAddPatient(Map<String, dynamic> patientJson) {
+    Patient newPatient = Patient.fromJson(patientJson);
+    addPatient(newPatient);
+  }
+
   void clearPatients() {
     _patients = [];
+    _selectedPatient = null;
     notifyListeners();
   }
 
@@ -134,11 +141,13 @@ class PatientProvider with ChangeNotifier {
 
   // Add an appointment
   void addAppointment(String patientId, Map<String, dynamic> appointment) {
+    print(appointment);
     int index = _patients.indexWhere((p) => p.id == patientId);
     if (index != -1) {
       _patients[index].appointments.add(appointment);
       notifyListeners();
     }
+
   }
 
   // Add a medicine
@@ -224,6 +233,12 @@ class PatientProvider with ChangeNotifier {
     }
   }
 
+  void allPatientsDetails() {
+    for (var patient in _patients) {
+      print(patient.toJson());
+    }
+  }
+
   //sync all data with server of selected patient
   Future<void> updateOnServer(String patientId) async {
     final baseURL = Globals.baseURL;
@@ -247,6 +262,115 @@ class PatientProvider with ChangeNotifier {
     }
     if (response.statusCode == 200) {
       print('Patient updated on server');
+    }
+  }
+  //
+ 
+}
+
+
+class NotesPatient with ChangeNotifier {
+  List<dynamic> _notes = [];
+
+  List<dynamic> get notes => _notes;
+
+  void setNotes(List<dynamic> notes) {
+    _notes = notes;
+    notifyListeners();
+  }
+
+  Future<void> fetchNotes(String patientId) async {
+    final storage = new FlutterSecureStorage();
+    final token = await storage.read(key: 'token') ?? '';
+    final baseURL = Globals.baseURL;
+    final String notesURL = '$baseURL/api/users/patient/notes/';
+
+    final response = await http.get(
+      Uri.parse(notesURL),
+      headers: {
+        'Authorization': 'Token $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final notesData = json.decode(response.body);
+      setNotes(notesData);
+    } else {
+      // Handle error
+      print('Failed to fetch notes');
+    }
+  }
+
+  Future<void> addNote( Map<String, dynamic> note) async {
+    final storage = new FlutterSecureStorage();
+    final token = await storage.read(key: 'token') ?? '';
+    final baseURL = Globals.baseURL;
+    final String notesURL = '$baseURL/api/users/patient/notes/';
+
+    final response = await http.post(
+      Uri.parse(notesURL),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Token $token',
+      },
+      body: json.encode(note),
+    );
+
+    if (response.statusCode == 201) {
+      _notes.add(note);
+      notifyListeners();
+    } else {
+      // Handle error
+      print('Failed to add note');
+    }
+  }
+
+  Future<void> updateNote(String noteId, Map<String, dynamic> updatedNote) async {
+    final storage = new FlutterSecureStorage();
+    final token = await storage.read(key: 'token') ?? '';
+    final baseURL = Globals.baseURL;
+    final String noteURL = '$baseURL/api/users/patient/notes/$noteId';
+
+    final response = await http.put(
+      Uri.parse(noteURL),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Token $token',
+      },
+      body: json.encode(updatedNote),
+    );
+
+    if (response.statusCode == 200) {
+      int index = _notes.indexWhere((note) => note['id'] == noteId);
+      if (index != -1) {
+        _notes[index] = updatedNote;
+        notifyListeners();
+      }
+    } else {
+      // Handle error
+      print('Failed to update note');
+    }
+  }
+
+  Future<void> deleteNote(String noteId) async {
+    final storage = new FlutterSecureStorage();
+    final token = await storage.read(key: 'token') ?? '';
+    final baseURL = Globals.baseURL;
+    final String noteURL = '$baseURL/api/users/patient/notes/$noteId';
+
+    final response = await http.delete(
+      Uri.parse(noteURL),
+      headers: {
+        'Authorization': 'Token $token',
+      },
+    );
+
+    if (response.statusCode == 204) {
+      _notes.removeWhere((note) => note['id'] == noteId);
+      notifyListeners();
+    } else {
+      // Handle error
+      print('Failed to delete note');
     }
   }
 }
