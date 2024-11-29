@@ -181,13 +181,31 @@ class _MedicinePageState extends State<MedicinePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Medicines'),
+        title: Text(
+          'Medications',
+          style: TextStyle(color: Theme.of(context).primaryColor),
+        ),
+        backgroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () {
-              signOut(context);
-            },
+          Container(
+            margin: EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 4,
+                  offset: Offset(2, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(Icons.logout, color: Theme.of(context).primaryColor),
+              onPressed: () {
+                signOut(context);
+              },
+            ),
           ),
         ],
       ),
@@ -212,9 +230,10 @@ class _MedicinePageState extends State<MedicinePage> {
                   IconButton(
                     icon: Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
-                      setState(() {
+                      setState(() async {
                         final patientProvider = Provider.of<PatientProvider>(context, listen: false);
                         patientProvider.deleteMedicine(patient.id, medicine['name']);
+                        await patientProvider.updateOnServer(patient.id);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Medicine deleted')),
                         );

@@ -56,13 +56,31 @@ class _NotesPageState extends State<NotesPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notes'),
+        title: Text(
+          'Notes',
+          style: TextStyle(color: Theme.of(context).primaryColor),
+        ),
+        backgroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () {
-              signOut(context);
-            },
+          Container(
+            margin: EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 4,
+                  offset: Offset(2, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(Icons.logout, color: Theme.of(context).primaryColor),
+              onPressed: () {
+                signOut(context);
+              },
+            ),
           ),
         ],
       ),

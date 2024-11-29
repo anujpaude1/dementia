@@ -6,7 +6,7 @@ import 'package:projects/utils/fetchData.dart';
 import 'package:projects/caretaker/homepage.dart';
 import 'package:projects/caretaker/map.dart';
 import 'package:projects/caretaker/medicine.dart';
-
+import 'package:projects/utils/fetchData.dart';
 import 'package:projects/caretaker/notes.dart';
 import '../provider/UserProvider.dart';
 import 'package:provider/provider.dart';
@@ -53,11 +53,11 @@ class _HomeScreenState extends State<CaretakerHomeScreen> {
         index: 0,
         height: 60.0,
         items: <Widget>[
-          Icon(Icons.home, size: 20),
-          Icon(Icons.calendar_today, size: 20),
-          Icon(FontAwesomeIcons.pills, size: 20),
-          Icon(Icons.note, size: 20),
-          Icon(Icons.map, size: 20),
+          Icon(Icons.home, size: 20,color:Colors.white),
+          Icon(Icons.calendar_today, size: 20,color:Colors.white),
+          Icon(FontAwesomeIcons.pills, size: 20,color:Colors.white),
+          Icon(Icons.note, size: 20,color:Colors.white),
+          Icon(Icons.map, size: 20,color:Colors.white),
         ],
         color: Theme.of(context).primaryColor,
         buttonBackgroundColor: Theme.of(context).colorScheme.secondary,

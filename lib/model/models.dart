@@ -75,6 +75,7 @@ class Patient {
   List<String> goals;
   List<Map<String, dynamic>> medicines;
   List<Map<String, dynamic>> notes;
+  List<Map<String, dynamic>> notesp;
   List<Map<String, dynamic>> appointments;
 
   Patient({
@@ -96,6 +97,7 @@ class Patient {
     this.goals = const [],
     this.medicines = const [],
     this.notes = const [],
+    this.notesp = const [],
     this.appointments = const [],
     this.photo = '',
   });
@@ -103,21 +105,16 @@ class Patient {
   // Factory constructor for JSON deserialization
   factory Patient.fromJson(Map<String, dynamic> json) {
     return Patient(
-      id: json['id'],
+      id: (json['id']).toString(),
       email: json['email'],
       username: json['username'],
       name: json['name'],
-      isActive: json['is_active'],
+      photo: json['photo'],
+      age: json['age'],
+      height: json['height'],
+      weight: json['weight'],
       medicalConditions: json['medical_conditions'],
       emergencyContact: json['emergency_contact'],
-      height: json['height']?.toDouble(),
-      weight: json['weight']?.toDouble(),
-      age: json['age'],
-      currentCoordinatesLat: json['current_coordinates_lat']?.toDouble(),
-      currentCoordinatesLong: json['current_coordinates_long']?.toDouble(),
-      centerCoordinatesLat: json['center_coordinates_lat']?.toDouble(),
-      centerCoordinatesLong: json['center_coordinates_long']?.toDouble(),
-      radius: json['radius']?.toDouble() ?? 5.0,
       goals: (json['goals'] as List<dynamic>?)
               ?.map((item) => item as String)
               .toList() ??
@@ -134,7 +131,6 @@ class Patient {
               ?.map((item) => item as Map<String, dynamic>)
               .toList() ??
           [],
-      photo: json['photo'] ?? '',
     );
   }
 
@@ -155,6 +151,37 @@ class Patient {
       'goals': goals,
       'medicines': medicines,
       'appointments': appointments,
+    };
+  }
+}
+class Note {
+  final String id;
+  final String title;
+  final String description;
+  final String date;
+
+  Note({
+    required this.id,
+    required this.title,
+    required this.description,
+    this.date = '',
+  });
+
+  factory Note.fromJson(Map<String, dynamic> json) {
+    return Note(
+      id: json['id'],
+      title: json['title'],
+      description: json['description'],
+      
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      
     };
   }
 }
