@@ -12,6 +12,7 @@ urlpatterns = [
     path('patient/notes/', views.NoteListCreateView.as_view(), name='update-patient'),
     path('patient/notes/<int:pk>', views.NoteDetailView.as_view(), name='update-patient'), 
     path('geofence/', views.GeofenceView.as_view(), name='geofence'),  # Geofence view for patients
-    path('patient/<int:patient_id>/location/', views.PatientLocationView.as_view(), name='patient-location'),  # Get patient location
+    path('patient/<int:patient_id>/location/', views.PatientLocationView.as_view(), name='patient-location'), 
+    # Get patient location
     
 ]

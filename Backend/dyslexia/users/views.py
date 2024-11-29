@@ -1,4 +1,5 @@
 from rest_framework import generics, status
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import login, authenticate
 from .serializers import SignUpSerializer,NoteSerializer, LoginSerializer, PatientSerializer, CaretakerSerializer, AssignPatientSerializer,SignOutSerializer
@@ -7,6 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from users.permissions import Iscaretaker, IsPatient
+from .permissions import IsCaretakerOrReadOnlyForCenter
 import logging
 import geopy
 from geopy.distance import distance
@@ -143,16 +145,10 @@ class AssignPatientView(generics.GenericAPIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        
+class PatientListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PatientSerializer
 
-class PatientListView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = PatientSerializer
-    
-class PatientListView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = PatientSerializer
-    
     def get_queryset(self):
         """
         Return the list of patients for the authenticated user.
@@ -164,22 +160,58 @@ class PatientListView(generics.ListAPIView):
             # Check if the user is a Caretaker
             if hasattr(user, 'caretaker') and isinstance(user.caretaker, caretaker):
                 return Patient.objects.filter(caretakers=user)
-            
+
             # Check if the user is a Patient
             elif hasattr(user, 'patient') and isinstance(user.patient, Patient):
                 return Patient.objects.filter(id=user.id)
-            
+
             # Fallback for users with neither role
             print("User is neither caretaker nor patient")
             return Patient.objects.none()
-        
+
         except Exception as e:
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    
+    def post(self, request, *args, **kwargs):
+        """
+        Handle POST requests to set center coordinates for a patient.
+        Only caretakers are allowed to set the center for their assigned patients.
+        """
+        user = request.user
+        if not hasattr(user, 'caretaker') or not isinstance(user.caretaker, caretaker):
+            return Response(
+                {"error": "You are not authorized to set the center."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Retrieve the patient ID and center coordinates from the request
+        patient_id = request.data.get("patient_id")
+        center_lat = request.data.get("center_coordinates_lat")
+        center_long = request.data.get("center_coordinates_long")
+
+        if not patient_id or not center_lat or not center_long:
+            return Response(
+                {"error": "Patient ID, latitude, and longitude are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Check if the patient exists and if the caretaker is assigned to them
+            patient = Patient.objects.get(id=patient_id, caretakers=user)
+            patient.center_coordinates_lat = center_lat
+            patient.center_coordinates_long = center_long
+            patient.save()
+
+            serializer = self.serializer_class(patient)
+            return Response(
+                {"message": "Center updated successfully.", "patient": serializer.data},
+                status=status.HTTP_200_OK
+            )
+        except Patient.DoesNotExist:
+            return Response({"error": "Patient not found or not assigned to you."}, status=status.HTTP_404_NOT_FOUND)
     
 
 class CaretakerDetailView(generics.RetrieveAPIView):
@@ -197,7 +229,32 @@ class CaretakerDetailView(generics.RetrieveAPIView):
         except caretaker.DoesNotExist:
             return Response({"error": "Caretaker not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    def post(self, request, *args, **kwargs):
+            """
+            Handle updating caretaker details
+            """
+            instance = self.get_queryset().first()
 
+            # Ensure the user is the caretaker
+            if instance.id != request.user.id:
+                return Response(
+                    {"error": "You are not authorized to update this caretaker's details."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            serializer = self.serializer_class(instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_queryset(self):
+        """
+        Return only the authenticated caretaker's details
+        """
+        return caretaker.objects.filter(id=self.request.user.id)
+    
+    
 class UpdatePatientDetailsView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated, Iscaretaker]
     serializer_class = PatientSerializer
@@ -294,7 +351,6 @@ class GeofenceView(generics.GenericAPIView):
             "distance_from_center": distance_km
         }, status=status.HTTP_200_OK)
 
-
 class PatientLocationView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, Iscaretaker]
 
@@ -316,7 +372,6 @@ class PatientLocationView(generics.GenericAPIView):
         center_point = (patient.center_coordinates_lat, patient.center_coordinates_long)
         current_point = (patient.current_coordinates_lat, patient.current_coordinates_long)
         radius = patient.radius
-
         distance_km = distance(center_point, current_point).km
         is_outside_geofence = distance_km > radius
 
@@ -331,4 +386,43 @@ class PatientLocationView(generics.GenericAPIView):
             "distance_from_center": distance_km
         }
         return Response(location_data, status=status.HTTP_200_OK)
+        
+
+    def post(self, request, patient_id):
+        user = request.user
+        if not hasattr(user, 'caretaker'):
+            return Response({"error": "User is not a caretaker."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            patient = Patient.objects.get(id=patient_id)
+        except Patient.DoesNotExist:
+            return Response({"error": "Patient not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if the caretaker is associated with the patient
+        if not patient.caretakers.filter(id=user.id).exists():
+            return Response({"error": "You are not authorized to update this patient's location."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Get new center location and radius from request data
+        new_center_lat = request.data.get('center_coordinates_lat')
+        new_center_long = request.data.get('center_coordinates_long')
+        new_radius = request.data.get('radius')
+
+        if new_center_lat is None or new_center_long is None or new_radius is None:
+            return Response({"error": "Center coordinates and radius are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update patient's center location and radius in the database
+        patient.center_coordinates_lat = new_center_lat
+        patient.center_coordinates_long = new_center_long
+        patient.radius = new_radius
+        patient.save()
+
+        return Response({"message": "Patient center location and radius updated successfully."}, status=status.HTTP_200_OK)
+
+
+
+    
+
+    
+
+
 

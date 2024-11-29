@@ -25,7 +25,7 @@ class BaseUser(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)  # Required for admin access
-    photo = models.ImageField(upload_to='users/profile_pics/', blank=True, null=True)
+    photo = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
@@ -55,7 +55,6 @@ class Patient(BaseUser):
     current_coordinates_long = models.FloatField(null=True, blank=True)
     center_coordinates_lat = models.FloatField(null=True, blank=True)
     center_coordinates_long = models.FloatField(null=True, blank=True)
-
     radius = models.FloatField(default=5.0)
 
     # JSON structured fields

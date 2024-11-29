@@ -1,4 +1,5 @@
-from rest_framework import serializers
+from rest_framework import serializers, serializers, request
+from rest_framework.exceptions import PermissionDenied
 from django.utils import timezone
 from .models import caretaker, Patient, Note
 from django.contrib.auth import get_user_model, authenticate
@@ -7,7 +8,9 @@ from django.contrib.auth.password_validation import validate_password
 # SignUpSerializer for creating caretaker or Patient
 class SignUpSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    user_type = serializers.ChoiceField(choices=['caretaker', 'patient'], write_only=True)
+    user_type = serializers.ChoiceField(
+        choices=['caretaker', 'patient'], 
+        write_only=True)
     photo = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
@@ -59,6 +62,13 @@ class CaretakerSerializer(serializers.ModelSerializer):
         model = caretaker
         fields = ['id', 'email', 'username', 'name', 'qualifications', 'experience_years', 'patients', 'photo']
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        if instance.photo and request:
+            representation['photo'] = request.build_absolute_uri(instance.photo.url)
+        return representation
+    
 # Patient Serializer
 class PatientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,7 +79,7 @@ class PatientSerializer(serializers.ModelSerializer):
             'email', 
             'username', 
             'name', 
-            'photo',
+            
             
             # Physical details
             'height', 
@@ -84,8 +94,35 @@ class PatientSerializer(serializers.ModelSerializer):
             # Structured fields
             'medicines', 
             'appointments', 
-            'notes'
+            'notes',
+
+            'current_coordinates_lat',
+            'current_coordinates_long',
+            'center_coordinates_lat',  # Include the center latitude
+            'center_coordinates_long', # Include the center longitude
+            'radius',  # Include the geofence radius
+            'photo',
+
         ]
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        if instance.photo and request:
+            representation['photo_url'] = request.build_absolute_uri(instance.photo.url)
+        return representation
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        if instance.photo and request:
+            representation['photo'] = request.build_absolute_uri(instance.photo.url)
+        return representation
+
+    def create(self, validated_data):
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
 
     def validate_medicines(self, value):
         """
@@ -138,7 +175,6 @@ class PatientSerializer(serializers.ModelSerializer):
             for key in required_keys:
                 if key not in note:
                     raise serializers.ValidationError(f"Note must include {key}")
-        
         return value
 
 class AssignPatientSerializer(serializers.Serializer):
@@ -194,3 +230,23 @@ class NoteSerializer(serializers.ModelSerializer):
         patient = self.context['request'].user.patient
         validated_data['patient'] = patient
         return super().create(validated_data)
+    def get_live_location(self, obj):
+        """
+        Compute live location data including center and current coordinates.
+        """
+        center_point = {
+            "latitude": obj.center_coordinates_lat,
+            "longitude": obj.center_coordinates_long
+        }
+        current_point = {
+            "latitude": obj.current_coordinates_lat,
+            "longitude": obj.current_coordinates_long
+        }
+
+        # Optionally, calculate if the patient is outside the geofence
+        # (This logic can be extended if needed)
+        location_data = {
+            "center_coordinates": center_point,
+            "current_coordinates": current_point,
+        }
+        return location_data

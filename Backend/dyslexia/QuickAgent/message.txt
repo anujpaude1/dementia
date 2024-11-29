@@ -5,7 +5,6 @@ import subprocess
 import requests
 import time
 import os
-import aiohttp
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
@@ -36,10 +35,9 @@ class LanguageModelProcessor:
         # self.llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-0125", openai_api_key=os.getenv("OPENAI_API_KEY"))
 
         self.memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-        script_dir = os.path.dirname(__file__)  # Get the directory of the current script
-        file_path = os.path.join(script_dir, 'system_prompt.txt')
+
         # Load the system prompt from a file
-        with open(file_path, 'r') as file:
+        with open('system_prompt.txt', 'r') as file:
             system_prompt = file.read().strip()
         
         self.prompt = ChatPromptTemplate.from_messages([
@@ -69,42 +67,6 @@ class LanguageModelProcessor:
         print(f"LLM ({elapsed_time}ms): {response['text']}")
         return response['text']
 
-def get_audio_data(self, text):
-        DEEPGRAM_URL = f"https://api.deepgram.com/v1/speak?model={self.MODEL_NAME}&performance=true&encoding=linear16&sample_rate=24000"
-        headers = {
-            "Authorization": f"Token {self.DG_API_KEY}",
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "text": text
-        }
-
-        # Debug: Print the request details
-        print(f"Sending request to Deepgram API: {DEEPGRAM_URL}")
-        print(f"Headers: {headers}")
-        print(f"Payload: {payload}")
-
-        start_time = time.time()  # Record the time before sending the request
-        first_byte_time = None  # Initialize a variable to store the time when the first byte is received
-
-        audio_data = bytearray()
-
-        with requests.post(DEEPGRAM_URL, stream=True, headers=headers, json=payload) as r:
-            if r.status_code != 200:
-                print(f"Error: Received status code {r.status_code}")
-                print(f"Response: {r.text}")
-                return None
-
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk:
-                    if first_byte_time is None:  # Check if this is the first chunk received
-                        first_byte_time = time.time()  # Record the time when the first byte is received
-                        ttfb = int((first_byte_time - start_time) * 1000)  # Calculate the time to first byte
-                        print(f"TTS Time to First Byte (TTFB): {ttfb}ms\n")
-                    audio_data.extend(chunk)
-
-        return bytes(audio_data)
-
 class TextToSpeech:
     # Set your Deepgram API Key and desired voice model
     DG_API_KEY = os.getenv("DEEPGRAM_API_KEY")
@@ -118,7 +80,7 @@ class TextToSpeech:
     def speak(self, text):
         if not self.is_installed("ffplay"):
             raise ValueError("ffplay not found, necessary to stream audio.")
-        print(text)
+
         DEEPGRAM_URL = f"https://api.deepgram.com/v1/speak?model={self.MODEL_NAME}&performance=true&encoding=linear16&sample_rate=24000"
         headers = {
             "Authorization": f"Token {self.DG_API_KEY}",
@@ -180,8 +142,6 @@ class TranscriptCollector:
 
 transcript_collector = TranscriptCollector()
 
-
-        
 async def get_transcript(callback):
     transcription_complete = asyncio.Event()  # Event to signal transcription completion
 
@@ -267,7 +227,6 @@ class ConversationManager:
 
             # Reset transcription_response for the next loop iteration
             self.transcription_response = ""
-
 
 if __name__ == "__main__":
     manager = ConversationManager()
