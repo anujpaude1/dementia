@@ -66,27 +66,29 @@ class _MapPageState extends State<MapPage>
       print("No patient selected");
       return;
     }
-    // url to get patient location patient/<int:patient_id>/location/
-    final response = await http.get(
-      Uri.parse('$baseURL/api/users/patient/${patient.id}/location/'),
-      headers: {
-        'Authorization': 'Token $token',
-      },
-    );
+    Timer.periodic(Duration(minutes: 1), (timer) async {
+      final response = await http.get(
+        Uri.parse('$baseURL/api/users/patient/${patient.id}/location/'),
+        headers: {
+          'Authorization': 'Token $token',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      setState(() {
-        activePatientLatitude = data['current_coordinates_lat'];
-        activePaitentLongitude = data['current_coordinates_long'];
-        activePatientRadius = data['radius'];
-        centerLatitude = data['center_coordinates_lat'];
-        centerLongitude = data['center_coordinates_long'];
-      });
-    } else {
-      // Handle error
-      Logger().e('Failed to fetch patient location');
-    }
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          activePatientLatitude = data['current_coordinates_lat'];
+          activePaitentLongitude = data['current_coordinates_long'];
+          activePatientRadius = data['radius'];
+          centerLatitude = data['center_coordinates_lat'];
+          centerLongitude = data['center_coordinates_long'];
+        });
+      } else {
+        // Handle error
+        Logger().e('Failed to fetch patient location');
+      }
+    });
+
     print(
         'Active patient location: $activePatientLatitude, $activePaitentLongitude');
   }

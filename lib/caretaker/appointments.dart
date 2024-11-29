@@ -202,13 +202,31 @@ class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerPr
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Appointments'),
+        title: Text(
+          'Appointments',
+          style: TextStyle(color: Theme.of(context).primaryColor),
+        ),
+        backgroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () {
-              signOut(context);
-            },
+          Container(
+            margin: EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 4,
+                  offset: Offset(2, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(Icons.logout, color: Theme.of(context).primaryColor),
+              onPressed: () {
+                signOut(context);
+              },
+            ),
           ),
         ],
       ),
@@ -219,7 +237,11 @@ class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerPr
               position: _offsetAnimation,
               child: Container(
                 padding: EdgeInsets.all(16.0),
-                color: Colors.blue,
+                width: MediaQuery.of(context).size.width * 0.93,
+                 decoration: BoxDecoration(
+            color: Colors.blue,
+            borderRadius: BorderRadius.circular(10), // Rounded corners
+          ),
                 child: Row(
                   children: [
                     Icon(Icons.warning, color: Colors.white),
@@ -256,9 +278,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerPr
                         IconButton(
                           icon: Icon(Icons.delete, color: Colors.red),
                           onPressed: () {
-                            setState(() {
+                            setState(() async {
                               final patientProvider = Provider.of<PatientProvider>(context, listen: false);
                               patientProvider.deleteAppointment(patient.id, appointment['date']);
+                              await patientProvider.updateOnServer(patient.id);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Appointment deleted')),
                               );
