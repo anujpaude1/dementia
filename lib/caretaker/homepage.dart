@@ -7,6 +7,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projects/utils/globals.dart' as globals;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:projects/utils/updateDetails.dart'; // Import the UpdateDetailsPage
+import 'package:projects/utils/updateDetailsCaretaker.dart'; // Import the UpdateDetailsPage
 
 class CaretakerHomePage extends StatelessWidget {
   @override
@@ -90,6 +92,21 @@ class CaretakerHomePage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              UpdateDetailsCaretakerPage(caretaker: caretaker),
+                        ),
+                      );
+                    },
+                    child: Text('Update Profile'),
+                  ),
+                ),
+                SizedBox(height: 20),
                 Consumer<PatientProvider>(
                   builder: (context, patientProvider, child) {
                     final patient = patientProvider.selectedPatient;
@@ -113,6 +130,18 @@ class CaretakerHomePage extends StatelessWidget {
                           ),
                           title: Text(patient.username),
                           subtitle: Text(patient.email),
+                          trailing: IconButton(
+                            icon: Icon(Icons.edit),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      UpdateDetailsPage(patient: patient),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ],
                     );

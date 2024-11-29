@@ -14,6 +14,7 @@ import 'package:projects/utils/globals.dart' as Globals;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../provider/UserProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:projects/utils/locationUpdateMap.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -32,13 +33,14 @@ class _MapPageState extends State<MapPage>
   double longitude = 0.0;
   double _bearing = 1.0;
   double activePatientLatitude = 0.0;
-  double activePaitentLongitude = 0.0;
+  double activePatientLongitude = 0.0;
   double activePatientRadius = 0.0;
   double centerLatitude = 0.0;
   double centerLongitude = 0.0;
   bool _locationFetched = false;
   double scale = 1.0;
   MapController mapController = MapController();
+  Timer? _locationUpdateTimer;
 
   @override
   void initState() {
@@ -47,8 +49,15 @@ class _MapPageState extends State<MapPage>
     _getCurrentLocation();
   }
 
+  @override
+  void dispose() {
+    _locationUpdateTimer?.cancel();
+    super.dispose();
+  }
+
   void _getCurrentLocation() async {
     Position position = await getCurrentPosition();
+    if (!mounted) return;
     setState(() {
       latitude = position.latitude;
       longitude = position.longitude;
@@ -66,7 +75,7 @@ class _MapPageState extends State<MapPage>
       print("No patient selected");
       return;
     }
-    Timer.periodic(Duration(minutes: 1), (timer) async {
+    Timer.periodic(Duration(seconds: 1), (timer) async {
       final response = await http.get(
         Uri.parse('$baseURL/api/users/patient/${patient.id}/location/'),
         headers: {
@@ -76,9 +85,10 @@ class _MapPageState extends State<MapPage>
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        if (!mounted) return;
         setState(() {
           activePatientLatitude = data['current_coordinates_lat'];
-          activePaitentLongitude = data['current_coordinates_long'];
+          activePatientLongitude = data['current_coordinates_long'];
           activePatientRadius = data['radius'];
           centerLatitude = data['center_coordinates_lat'];
           centerLongitude = data['center_coordinates_long'];
@@ -90,7 +100,7 @@ class _MapPageState extends State<MapPage>
     });
 
     print(
-        'Active patient location: $activePatientLatitude, $activePaitentLongitude');
+        'Active patient location: $activePatientLatitude, $activePatientLongitude');
   }
 
   // Listener to detect map movements and changes
@@ -106,12 +116,30 @@ class _MapPageState extends State<MapPage>
 
   @override
   Widget build(BuildContext context) {
-    final patientProvider =
-        Provider.of<PatientProvider>(context, listen: false);
+    final patientProvider = Provider.of<PatientProvider>(context, listen: true);
     final patient = patientProvider.selectedPatient;
 
     super.build(context);
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Map"),
+        actions: [
+          if (patient != null)
+            IconButton(
+              icon: Icon(Icons.home),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UpdateHomePage(
+                      patient: patient, // Pass the patient object
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
       body: Stack(
         children: [
           if (_locationFetched)
@@ -157,7 +185,7 @@ class _MapPageState extends State<MapPage>
                       Polyline(
                           points: [
                             LatLng(
-                                activePatientLatitude, activePaitentLongitude),
+                                activePatientLatitude, activePatientLongitude),
                             LatLng(centerLatitude, centerLongitude),
                           ],
                           color: Colors.red,
@@ -187,7 +215,7 @@ class _MapPageState extends State<MapPage>
                         width: 50.0,
                         height: 50.0,
                         point: LatLng(
-                            activePatientLatitude, activePaitentLongitude),
+                            activePatientLatitude, activePatientLongitude),
                         child: Column(
                           children: [
                             Container(
