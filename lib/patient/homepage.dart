@@ -40,7 +40,8 @@ class PatientHomePage extends StatelessWidget {
   }
 
   Future<void> getLocation() async {
-    final String baseURL = 'https://example.com'; // Replace with your actual base URL
+    final String baseURL =
+        'https://example.com'; // Replace with your actual base URL
     final String locationURL = '$baseURL/api/users/patient/6/location/';
 
     try {
@@ -93,7 +94,8 @@ class PatientHomePage extends StatelessWidget {
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Roboto',
-                        color: Colors.white, // This color will be masked by the gradient
+                        color: Colors
+                            .white, // This color will be masked by the gradient
                       ),
                     ),
                   ),
@@ -146,20 +148,22 @@ class PatientHomePage extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     gradient: LinearGradient(
-                      colors: [Color.fromARGB(255, 255, 255, 255), Color(0xFFffffff)],
+                      colors: [
+                        Color.fromARGB(255, 255, 255, 255),
+                        Color(0xFFffffff)
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                   ),
                   child: ExpansionTile(
-                    initiallyExpanded: true, // Expanded by default
-                    leading: Icon(Icons.star, color: Theme.of(context).primaryColor),
-                    title: Text('Goals & Achievements', style: Theme.of(context).textTheme.bodyLarge),
+                    initiallyExpanded: false, // Expanded by default
+                    leading:
+                        Icon(Icons.star, color: Theme.of(context).primaryColor),
+                    title: Text('Goals & Achievements',
+                        style: Theme.of(context).textTheme.bodyLarge),
                     children: patient.goals.map((goal) {
-                      return ListTile(
-                        leading: Icon(Icons.check_circle, color: Colors.green),
-                        title: Text(goal), // Add goal title
-                      );
+                      return GoalTile(goal: goal);
                     }).toList(),
                   ),
                 ),
@@ -171,10 +175,16 @@ class PatientHomePage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: ListTile(
-                  leading: Icon(Icons.navigation, color: Theme.of(context).primaryColor),
-                  title: Text('Navigate Home', style: TextStyle(fontSize: 18, fontFamily: 'Roboto', fontWeight: FontWeight.bold)),
+                  leading: Icon(Icons.navigation,
+                      color: Theme.of(context).primaryColor),
+                  title: Text('Navigate Home',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.bold)),
                   onTap: () {
-                    getLocation();
+                    _openGoogleMaps(patient.centerCoordinatesLat,
+                        patient.centerCoordinatesLong);
                   },
                 ),
               ),
@@ -186,28 +196,17 @@ class PatientHomePage extends StatelessWidget {
                 ),
                 child: ListTile(
                   leading: Icon(Icons.phone, color: Colors.red),
-                  title: Text('Emergency Call', style: TextStyle(color: Colors.red, fontSize: 18, fontFamily: 'Roboto', fontWeight: FontWeight.bold)),
+                  title: Text('Emergency Call',
+                      style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 18,
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.bold)),
                   onTap: () {
                     _makeEmergencyCall(patient.emergencyContact);
                   },
                 ),
               ),
-              SizedBox(height: 20),
-              ElevatedButton.icon(
-  onPressed: () {
-    Navigator.of(context).pop();
-  },
-  icon: Icon(Icons.home, color: Theme.of(context).primaryColor),
-  label: Text('Home'),
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.white,
-    foregroundColor: Theme.of(context).primaryColor,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10),
-    ),
-  ),
-)
-
             ],
           ),
         ),
@@ -248,6 +247,37 @@ class PatientHomePage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class GoalTile extends StatefulWidget {
+  final String goal;
+
+  GoalTile({required this.goal});
+
+  @override
+  _GoalTileState createState() => _GoalTileState();
+}
+
+class _GoalTileState extends State<GoalTile> {
+  bool _isCompleted = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(widget.goal),
+      trailing: IconButton(
+        icon: Icon(
+          _isCompleted ? Icons.check_circle : Icons.check_circle_outline,
+          color: _isCompleted ? Colors.green : Colors.grey,
+        ),
+        onPressed: () {
+          setState(() {
+            _isCompleted = !_isCompleted;
+          });
+        },
       ),
     );
   }

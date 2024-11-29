@@ -5,6 +5,7 @@ import 'homepage.dart';
 import 'appointments.dart';
 import 'notes.dart';
 import 'medicines.dart';
+import 'contacts.dart';
 import '../utils/fetchData.dart';
 import 'package:projects/utils/location.dart';
 import 'package:projects/utils/locationPermission.dart';
@@ -38,6 +39,7 @@ class _HomeScreenState extends State<PatientHomeScreen> {
     'Appointments',
     'Medicines',
     'Notes',
+    'Contacts'
   ];
   Future<void> _fetchData() async {
     await handleLocationPermission();
@@ -49,6 +51,7 @@ class _HomeScreenState extends State<PatientHomeScreen> {
         AppointmentsListPage(),
         MedicinesListPage(),
         NotesPage(),
+        ContactsPage()
       ];
     });
   }
@@ -61,7 +64,7 @@ class _HomeScreenState extends State<PatientHomeScreen> {
             style: TextStyle(color: Theme.of(context).primaryColor)),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
-         Container(
+          Container(
             margin: EdgeInsets.only(right: 16),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -95,6 +98,7 @@ class _HomeScreenState extends State<PatientHomeScreen> {
           Icon(Icons.calendar_today, size: 30, color: Colors.white),
           Icon(Icons.medical_services, size: 30, color: Colors.white),
           Icon(Icons.note, size: 30, color: Colors.white),
+          Icon(Icons.contact_emergency, size: 30, color: Colors.white),
         ],
         color: Theme.of(context).primaryColor,
         buttonBackgroundColor: Theme.of(context).colorScheme.secondary,
