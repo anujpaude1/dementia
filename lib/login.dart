@@ -11,6 +11,7 @@ import 'package:projects/model/models.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:projects/utils/fetchData.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -20,7 +21,24 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FocusNode _usernameFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
   final storage = new FlutterSecureStorage();
+  bool _showCogniCare = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _startAnimation();
+  }
+
+  void _startAnimation() async {
+    await Future.delayed(Duration(seconds: 2));
+    setState(() {
+      _showCogniCare = false;
+    });
+  }
+
   Future<void> _login(BuildContext context) async {
     final String username = _usernameController.text;
     final String password = _passwordController.text;
@@ -80,52 +98,110 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
+        appBar: AppBar(
+        title: AnimatedSwitcher(
+          duration: Duration(seconds: 1),
+          switchInCurve: Curves.easeInOut,
+          switchOutCurve: Curves.easeInOut,
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return child;
+          },
+          child: TypewriterAnimatedTextKit(
+            key: ValueKey('Login'),
+            text: ['Login'],
+            textStyle: TextStyle(
+              color: Theme.of(context).primaryColor,
+              fontSize: 24.0,
+              fontWeight: FontWeight.bold,
+            ),
+            speed: Duration(milliseconds: 200),
+            repeatForever: true,
+          ),
+        ),
+        backgroundColor: Colors.white,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            TextField(
-              controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
+            ShaderMask(
+              shaderCallback: (bounds) => LinearGradient(
+                colors: [Color(0xFF00DBDE), Color(0xFFFC00FF)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ).createShader(bounds),
+              child: Text(
+                'Welcome Back',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Roboto',
+                  color: Colors.white, // This color will be masked by the gradient
+                ),
+              ),
             ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
+            SizedBox(height: 20),
+            FocusScope(
+              child: Focus(
+                onFocusChange: (focus) {
+                  setState(() {});
+                },
+                child: TextField(
+                  controller: _usernameController,
+                  focusNode: _usernameFocusNode,
+                  decoration: InputDecoration(
+                    hintText: _usernameFocusNode.hasFocus ? '' : 'Username',
+                    border: InputBorder.none,
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            FocusScope(
+              child: Focus(
+                onFocusChange: (focus) {
+                  setState(() {});
+                },
+                child: TextField(
+                  controller: _passwordController,
+                  focusNode: _passwordFocusNode,
+                  decoration: InputDecoration(
+                    hintText: _passwordFocusNode.hasFocus ? '' : 'Password',
+                    border: InputBorder.none,
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                  ),
+                  obscureText: true,
+                ),
+              ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => _login(context),
+              onPressed: () {
+                // Handle login
+                  _login(context);
+              },
               child: Text('Login'),
             ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text("Don't have an account? "),
-            GestureDetector(
-              onTap: () {
+            
+            SizedBox(height: 20),
+            TextButton(
+              onPressed: () {
+                // Handle signup
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => SignupPage()),
                 );
               },
-              child: Text(
-                "Sign up",
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              child: Text('Sign Up'),
             ),
           ],
         ),
       ),
     );
+  
   }
 }

@@ -6,22 +6,33 @@ import 'package:projects/patient/route.dart';
 import 'provider/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+
+import 'package:flutter/material.dart';
+
+
+
+import 'package:flutter/material.dart';
+
+import 'package:flutter/material.dart';
 
 final ThemeData appTheme = ThemeData(
   // Base colors
-  primaryColor: const Color(0xFF06402B),
-  scaffoldBackgroundColor: const Color(0xFFF5ECE5),
+  primaryColor: const Color(0xFF514CE4), // Primary color
+  scaffoldBackgroundColor: const Color(0xFFFFFFFF), // White
 
   // Color scheme
   colorScheme: ColorScheme.light(
-    primary: const Color(0xFF06402B), // Dark olive green
-    secondary: const Color(0xFFAD5D50), // Terracotta red
-    background: const Color(0xFFF5ECE5), // Soft beige background
-    surface: const Color(0xFFF5ECE5),
+    primary: const Color(0xFF514CE4), // Primary color
+    secondary: const Color(0xFF757575), // Grey
+    background: const Color(0xFFFFFFFF), // White background
+    surface: const Color(0xFFFFFFFF), // White surface
     onPrimary: Colors.white,
-    onSecondary: Colors.white,
-    onBackground: const Color(0xFF06402B),
-    onSurface: const Color(0xFF45523E),
+    onSecondary: Colors.black,
+    onBackground: const Color(0xFF514CE4),
+    onSurface: const Color(0xFF514CE4),
+    // primaryVariant: const Color(0xFF3B3AC4), // Darker variant of primary color
+    // secondaryVariant: const Color(0xFF6A67E8), // Lighter variant of primary color
   ),
 
   // Text theme
@@ -30,39 +41,39 @@ final ThemeData appTheme = ThemeData(
     displayLarge: TextStyle(
       fontSize: 32,
       fontWeight: FontWeight.bold,
-      color: Colors.black,
+      color: const Color(0xFF514CE4),
     ),
     // App bar and screen titles
     titleLarge: TextStyle(
       fontSize: 24,
       fontWeight: FontWeight.bold,
-      color: Colors.black,
+      color: const Color(0xFF514CE4),
     ),
     // Subtitle text
     titleMedium: TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w500,
-      color: const Color(0xFF45523E),
+      color: const Color(0xFF757575), // Grey
     ),
     // Body text
     bodyLarge: TextStyle(
       fontSize: 16,
-      color: Colors.black,
+      color: const Color(0xFF514CE4),
     ),
     bodyMedium: TextStyle(
       fontSize: 14,
-      color: const Color(0xFF45523E),
+      color: const Color(0xFF757575), // Grey
     ),
     // Small text like captions
     bodySmall: TextStyle(
       fontSize: 12,
-      color: const Color(0xFFAD5D50),
+      color: const Color(0xFF9E9E9E), // Light grey
     ),
   ),
 
   // AppBar theme
   appBarTheme: AppBarTheme(
-    backgroundColor: const Color(0xFF45523E),
+    backgroundColor: const Color(0xFF514CE4),
     foregroundColor: Colors.white,
     titleTextStyle: const TextStyle(
       fontSize: 20,
@@ -77,7 +88,7 @@ final ThemeData appTheme = ThemeData(
   // Elevated Button theme
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      backgroundColor: const Color(0xFF45523E),
+      backgroundColor: const Color(0xFF514CE4),
       foregroundColor: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       shape: RoundedRectangleBorder(
@@ -89,15 +100,15 @@ final ThemeData appTheme = ThemeData(
   // Text Button theme
   textButtonTheme: TextButtonThemeData(
     style: TextButton.styleFrom(
-      foregroundColor: const Color(0xFF45523E),
+      foregroundColor: const Color(0xFF514CE4),
     ),
   ),
 
   // Outlined Button theme
   outlinedButtonTheme: OutlinedButtonThemeData(
     style: OutlinedButton.styleFrom(
-      foregroundColor: const Color(0xFF45523E),
-      side: BorderSide(color: const Color(0xFF45523E)),
+      foregroundColor: const Color(0xFF514CE4),
+      side: BorderSide(color: const Color(0xFF514CE4)),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
@@ -108,11 +119,11 @@ final ThemeData appTheme = ThemeData(
   // Card theme
   cardTheme: CardTheme(
     color: Colors.white,
-    elevation: 2,
+    elevation: 4,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(12),
     ),
-    shadowColor: const Color(0xFF45523E).withOpacity(0.3),
+    shadowColor: const Color(0xFF514CE4).withOpacity(0.3),
   ),
 
   // Input Decoration theme
@@ -121,35 +132,35 @@ final ThemeData appTheme = ThemeData(
     fillColor: Colors.white,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: const Color(0xFFAD5D50).withOpacity(0.5)),
+      borderSide: BorderSide(color: const Color(0xFF514CE4).withOpacity(0.5)),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: const Color(0xFF45523E), width: 2),
+      borderSide: BorderSide(color: const Color(0xFF514CE4), width: 2),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: const Color(0xFFAD5D50).withOpacity(0.5)),
+      borderSide: BorderSide(color: const Color(0xFF514CE4).withOpacity(0.5)),
     ),
     labelStyle: TextStyle(
-      color: const Color(0xFF45523E),
+      color: const Color(0xFF514CE4),
     ),
   ),
 
   // Floating Action Button theme
   floatingActionButtonTheme: FloatingActionButtonThemeData(
-    backgroundColor: const Color(0xFFAD5D50),
+    backgroundColor: const Color(0xFF514CE4), // Primary color
     foregroundColor: Colors.white,
   ),
-);
 
-void main() async {
+);void main() async {
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => PatientProvider()),
-        ChangeNotifierProvider(create: (_) => CaretakerProvider())
+        ChangeNotifierProvider(create: (_) => CaretakerProvider()),
+        ChangeNotifierProvider(create: (_) => NotesPatient()),
       ],
       child: MyApp(),
     ),
@@ -157,9 +168,11 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: appTheme,
       home: AuthWrapper(),
@@ -203,8 +216,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        body: Center(
+        body: Container(
           child: CircularProgressIndicator(),
+           decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF514CE4), Color(0xFF6A67E8)], // Gradient from primary to lighter variant
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+          ),
         ),
       );
     }
